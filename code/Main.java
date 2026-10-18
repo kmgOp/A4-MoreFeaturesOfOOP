@@ -1,38 +1,48 @@
 import java.io.*;
 import java.util.*;
-import java.lang.reflect.*;
 
-//Enums
-enum ActivityType { ACADEMIC, NON_ACADEMIC }
+// simple enum for activity type
+enum ActivityType {
+    ACADEMIC, NON_ACADEMIC
+}
 
-//Exception Handling (Custom Exception)
+// custom exception
 class InvalidDataException extends Exception {
     public InvalidDataException(String message) {
         super(message);
     }
 }
 
-//Abstract Classes & Interfaces
+// abstract class with different access modifiers
 abstract class UniversityDepartment implements Serializable {
-    //Access Modifiers: protected, private, public
+    private static final long serialVersionUID = 1L;
+
     protected String name;
     private int id;
     public String location;
 
-    //Constructors
     public UniversityDepartment(String name, int id, String location) {
         this.name = name;
         this.id = id;
         this.location = location;
     }
 
-    public int getId() { return id; }
-    
-    //Abstract method
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    protected void showProtectedInfo() {
+        System.out.println("Department name: " + name);
+    }
+
     public abstract void showDepartmentInfo();
 }
 
-//Multiple Inheritance via Interfaces
+// interfaces for activities
 interface AcademicEvents {
     void displayAcademicActivities();
 }
@@ -41,195 +51,356 @@ interface NonAcademicEvents {
     void displayNonAcademicActivities();
 }
 
-// Interface inheriting multiple interfaces
+// one interface extending two interfaces
 interface NIRFDetails extends AcademicEvents, NonAcademicEvents {
     void submitToNIRF();
 }
 
-//Generic Class 
+// generic class for storing activities
 class ActivityTracker<T> implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private List<T> activities = new ArrayList<>();
-    
+
     public void addActivity(T activity) {
         activities.add(activity);
     }
-    
+
     public List<T> getActivities() {
         return activities;
     }
 }
 
-// Main class representing DCST
-class DCST extends UniversityDepartment implements NIRFDetails, Cloneable {
-    //Static Attributes & Methods
+// single inheritance: DCST extends UniversityDepartment
+// multiple interface inheritance: DCST implements three interfaces
+class DCST extends UniversityDepartment
+        implements NIRFDetails, Cloneable {
+
+    private static final long serialVersionUID = 1L;
     private static int instanceCount = 0;
-    
-    //Collection Frameworks (List & Map)
+
     public List<String> programs = new ArrayList<>();
     public Map<String, List<String>> courses = new LinkedHashMap<>();
-    
+
     public ActivityTracker<String> academicTracker = new ActivityTracker<>();
     public ActivityTracker<String> nonAcademicTracker = new ActivityTracker<>();
 
+    private Set<String> staff = new LinkedHashSet<>();
+    private Queue<String> upcomingActivities = new LinkedList<>();
+
     public DCST(String name, int id, String location) {
         super(name, id, location);
-        instanceCount++; // Tracks object creation
+        instanceCount++;
     }
 
     public static void displayInstanceCount() {
-        System.out.println("Total DCST Instances Created: " + instanceCount);
+        System.out.println("DCST objects created: " + instanceCount);
     }
 
-    //Polymorphism (Overloading)
+    // method overloading
     public void addProgram(String program) {
         programs.add(program);
     }
 
     public void addProgram(String program, List<String> subjects) {
         programs.add(program);
-        courses.put(program, subjects);
+        courses.put(program, new ArrayList<>(subjects));
     }
 
-    //Polymorphism (Overriding)
+    // method overriding
     @Override
     public void showDepartmentInfo() {
-        System.out.println("Department: " + name + " | Location: " + location);
+        System.out.println("Department: " + name);
+        System.out.println("Department ID: " + getId());
+        System.out.println("Location: " + location);
     }
 
     @Override
     public void displayAcademicActivities() {
-        System.out.println("\n Academic Activities ");
-        for(String act : academicTracker.getActivities()) {
-            System.out.println("- " + act);
+        System.out.println("\nAcademic Activities:");
+        for (String activity : academicTracker.getActivities()) {
+            System.out.println("- " + activity);
         }
     }
 
     @Override
     public void displayNonAcademicActivities() {
-        System.out.println("\n Non-Academic Activities ");
-        for(String act : nonAcademicTracker.getActivities()) {
-            System.out.println("- " + act);
+        System.out.println("\nNon-Academic Activities:");
+        for (String activity : nonAcademicTracker.getActivities()) {
+            System.out.println("- " + activity);
         }
     }
 
     @Override
     public void submitToNIRF() {
-        System.out.println("\nSubmitting Data to NIRF Portal...");
-        System.out.println("Programs Offered: " + programs);
+        System.out.println("\nSubmitting data to NIRF...");
+        System.out.println("Programs: " + programs);
+        System.out.println("Courses and subjects: " + courses);
+        System.out.println("Staff: " + staff);
     }
 
-    //Cloning (Shallow vs Deep)
+    public void addStaff(String member) {
+        staff.add(member);
+    }
+
+    public void addUpcomingActivity(String activity) {
+        upcomingActivities.offer(activity);
+    }
+
+    public void displayCollections() {
+        System.out.println("List - Programs: " + programs);
+        System.out.println("Map - Courses: " + courses);
+        System.out.println("Set - Staff: " + staff);
+        System.out.println("Queue - Upcoming activities: " + upcomingActivities);
+    }
+
+    // generic method
+    public static <T> void displayItem(T item) {
+        System.out.println("Generic item: " + item);
+    }
+
+    // shallow clone with independent activity trackers
     @Override
-    protected Object clone() throws CloneNotSupportedException {
-        // Shallow clone
-        DCST cloned = (DCST) super.clone();
-        
-        // Deep clone implementation for the tracking arrays
-        cloned.academicTracker = new ActivityTracker<>();
-        for(String a : this.academicTracker.getActivities()) {
-            cloned.academicTracker.addActivity(a);
+    public Object clone() throws CloneNotSupportedException {
+        DCST copy = (DCST) super.clone();
+
+        copy.academicTracker = new ActivityTracker<>();
+        for (String activity : academicTracker.getActivities()) {
+            copy.academicTracker.addActivity(activity);
         }
-        return cloned;
+
+        copy.nonAcademicTracker = new ActivityTracker<>();
+        for (String activity : nonAcademicTracker.getActivities()) {
+            copy.nonAcademicTracker.addActivity(activity);
+        }
+
+        // programs and courses are still shared
+        return copy;
     }
 }
+
+// multilevel inheritance example
+class ResearchDepartment extends UniversityDepartment {
+    private static final long serialVersionUID = 1L;
+
+    public ResearchDepartment(String name, int id, String location) {
+        super(name, id, location);
+    }
+
+    @Override
+    public void showDepartmentInfo() {
+        System.out.println("Research Department: " + name);
+    }
+}
+
+class AIResearchDepartment extends ResearchDepartment {
+    private static final long serialVersionUID = 1L;
+
+    public AIResearchDepartment(String name, int id, String location) {
+        super(name, id, location);
+    }
+
+    @Override
+    public void showDepartmentInfo() {
+        System.out.println("AI Research Department: " + name);
+    }
+}
+
+// hierarchical inheritance: two classes extend the same parent
+class TourismDepartment extends UniversityDepartment {
+    private static final long serialVersionUID = 1L;
+
+    public TourismDepartment(String name, int id, String location) {
+        super(name, id, location);
+    }
+
+    @Override
+    public void showDepartmentInfo() {
+        System.out.println("Tourism Department: " + name);
+    }
+}
+
+// hybrid inheritance: class inheritance combined with interfaces
+class AgricultureDepartment extends UniversityDepartment
+        implements AcademicEvents, NonAcademicEvents {
+
+    private static final long serialVersionUID = 1L;
+
+    public AgricultureDepartment(String name, int id, String location) {
+        super(name, id, location);
+    }
+
+    @Override
+    public void showDepartmentInfo() {
+        System.out.println("Agriculture Department: " + name);
+    }
+
+    @Override
+    public void displayAcademicActivities() {
+        System.out.println("Agriculture seminar and field training");
+    }
+
+    @Override
+    public void displayNonAcademicActivities() {
+        System.out.println("Agriculture exhibition");
+    }
+}
+
+// message passing through an interface
 class DataProcessor {
-    //implementing NIRFDetails
-    public void processNIRFSubmission(NIRFDetails entity) {
-        System.out.println("\n[Initiating Message Passing to System...]");
-        entity.displayAcademicActivities();
-        entity.displayNonAcademicActivities();
-        entity.submitToNIRF();
+    public void process(NIRFDetails details) {
+        details.displayAcademicActivities();
+        details.displayNonAcademicActivities();
+        details.submitToNIRF();
     }
 }
+
 public class Main {
     public static void main(String[] args) {
+        System.out.println("===== DCST NIRF INFORMATION SYSTEM =====");
+
         try {
-            System.out.println("DCST Goa University NIRF System\n");
-            
-            // 1. Object Referencing & Constructors
-            DCST dcst1 = new DCST("Computer Science", 269, "Goa Business School");
-            DCST referenceDcst = dcst1; // Multiple objects sharing same reference
-            
-            // Demonstrate side effect of referencing
-            referenceDcst.location = "GBS, Taleigao"; 
-            System.out.println("Location updated via shared reference: " + dcst1.location);
-            
-            // 2. Static Method Call
+            // constructors and shared reference
+            DCST dcst = new DCST(
+                    "Computer Science", 269, "Goa Business School");
+
+            DCST reference = dcst;
+            reference.location = "GBS, Taleigao";
+
+            System.out.println("\n1. OBJECT REFERENCES");
+            dcst.showDepartmentInfo();
+            System.out.println("Shared reference location: " + dcst.location);
+
+            // static and enum
+            System.out.println("\n2. STATIC MEMBERS AND ENUM");
             DCST.displayInstanceCount();
-            dcst1.addProgram("M.C.A.", Arrays.asList("Maths", "Internet Tech", "Data Structure"));
-            dcst1.addProgram("M.Sc. Data Science", Arrays.asList("Machine Learning", "Python"));
-            dcst1.addProgram("M.Sc. Artificial Intelligence");
-            
-            
-            // Activities
-            dcst1.academicTracker.addActivity("ISA");
-            dcst1.academicTracker.addActivity("Midpoint");
-            dcst1.academicTracker.addActivity("SEA");
-            dcst1.academicTracker.addActivity("Study Tour");
-            dcst1.academicTracker.addActivity("Placements");
+            System.out.println("Activity type: " + ActivityType.ACADEMIC);
 
-            dcst1.nonAcademicTracker.addActivity("InfoFest (Tech Event)");
-            dcst1.nonAcademicTracker.addActivity("Plateaunica (Inter-departmental fiesta)");
-            dcst1.nonAcademicTracker.addActivity("Play-on (Sports)");
-            
-            // 6. Message Passing
+            // programs and subjects
+            dcst.addProgram("M.C.A.", Arrays.asList(
+                    "Mathematics", "Internet Technologies", "Data Structures"));
+            dcst.addProgram("M.Sc. Data Science", Arrays.asList(
+                    "Python", "Machine Learning", "Data Analytics"));
+            dcst.addProgram("M.Sc. Artificial Intelligence", Arrays.asList(
+                    "Artificial Intelligence", "Machine Learning"));
+
+            // academic activities
+            dcst.academicTracker.addActivity("ISA");
+            dcst.academicTracker.addActivity("Midpoint");
+            dcst.academicTracker.addActivity("SEA");
+            dcst.academicTracker.addActivity("Study Tour");
+            dcst.academicTracker.addActivity("Placements");
+
+            // non-academic activities
+            dcst.nonAcademicTracker.addActivity("InfoFest");
+            dcst.nonAcademicTracker.addActivity("Plateaunica");
+            dcst.nonAcademicTracker.addActivity("Play-on");
+
+            dcst.addStaff("Teaching Staff");
+            dcst.addStaff("Non-Teaching Staff");
+            dcst.addUpcomingActivity("Guest Lecture");
+            dcst.addUpcomingActivity("Department Seminar");
+
+            // abstract class and access modifiers
+            System.out.println("\n3. ACCESS MODIFIERS");
+            System.out.println("Public location: " + dcst.location);
+            System.out.println("Private ID through getter: " + dcst.getId());
+
+            // interface and message passing
+            System.out.println("\n4. MESSAGE PASSING");
             DataProcessor processor = new DataProcessor();
-            processor.processNIRFSubmission(dcst1);
+            processor.process(dcst);
 
-            // 10. Reflection (RTTI)
-            System.out.println("\n Reflection ");
-            Class<?> cls = dcst1.getClass();
-            System.out.println("Class Name: " + cls.getName());
-            System.out.println("Implemented Interfaces: ");
-            for (Class<?> i : cls.getInterfaces()) {
-                System.out.println("- " + i.getSimpleName());
+            // overloading
+            System.out.println("\n5. METHOD OVERLOADING");
+            dcst.addProgram("Additional Program");
+            System.out.println("One-argument addProgram called");
+
+            // collections and generics
+            System.out.println("\n6. COLLECTIONS AND GENERICS");
+            dcst.displayCollections();
+            DCST.displayItem("Computer Science");
+            DCST.displayItem(100);
+
+            // inheritance demonstrations
+            System.out.println("\n7. INHERITANCE DEMONSTRATIONS");
+
+            dcst.showDepartmentInfo();
+
+            ResearchDepartment research = new ResearchDepartment(
+                    "Research", 101, "Goa");
+            AIResearchDepartment ai = new AIResearchDepartment(
+                    "AI Research", 102, "Goa");
+            research.showDepartmentInfo();
+            ai.showDepartmentInfo();
+
+            TourismDepartment tourism = new TourismDepartment(
+                    "Tourism", 103, "Goa");
+            AgricultureDepartment agriculture = new AgricultureDepartment(
+                    "Agriculture", 104, "Goa");
+            tourism.showDepartmentInfo();
+            agriculture.showDepartmentInfo();
+
+            System.out.println("Java does not support extending two classes.");
+            System.out.println("Multiple inheritance is demonstrated using interfaces.");
+            agriculture.displayAcademicActivities();
+            agriculture.displayNonAcademicActivities();
+
+            // reflection
+            System.out.println("\n8. REFLECTION");
+            Class<?> cls = dcst.getClass();
+            System.out.println("Class: " + cls.getName());
+            System.out.println("Superclass: "
+                    + cls.getSuperclass().getSimpleName());
+
+            for (Class<?> item : cls.getInterfaces()) {
+                System.out.println("Interface: " + item.getSimpleName());
             }
 
-            // 10. Deep/Shallow Cloning
-            System.out.println("\n Cloning Deep/Shallow ");
-            DCST clonedDcst = (DCST) dcst1.clone();
-            clonedDcst.academicTracker.addActivity("Extra Guest Lecture"); 
-            System.out.println("Original Programs (affected by shallow clone): " + dcst1.programs);
-            System.out.println("Original Academic Activities (unaffected by deep clone): " + dcst1.academicTracker.getActivities());
-            System.out.println("Cloned Academic Activities: " + clonedDcst.academicTracker.getActivities());
+            // shallow and deep cloning
+            System.out.println("\n9. CLONING");
+            DCST cloned = (DCST) dcst.clone();
 
-            // 10. Persistence & I/O
-            System.out.println("\n Persistence File I/O ");
-            String filename = "dcst_data.ser";
-            
-            // Serialize
-            try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
-                out.writeObject(dcst1);
-                System.out.println("Object successfully serialized to " + filename);
-            }
-            
-            // Deserialize
-            try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename))) {
-                DCST deserialized = (DCST) in.readObject();
-                System.out.println("Object successfully deserialized.");
-                System.out.println("Recovered Dept Name: " + deserialized.name);
+            cloned.programs.add("Cloned Program");
+            cloned.academicTracker.addActivity("Extra Guest Lecture");
+
+            System.out.println("Original programs: " + dcst.programs);
+            System.out.println("Cloned programs: " + cloned.programs);
+            System.out.println("Original activities: "
+                    + dcst.academicTracker.getActivities());
+            System.out.println("Cloned activities: "
+                    + cloned.academicTracker.getActivities());
+
+            // persistence and file I/O
+            System.out.println("\n10. PERSISTENCE");
+            try (ObjectOutputStream out = new ObjectOutputStream(
+                    new FileOutputStream("dcst_data.ser"))) {
+                out.writeObject(dcst);
+                System.out.println("Department saved successfully");
             }
 
-            // 9. Exception Handling
-            System.out.println("\n Exception Handling ");
-            throwCustomExceptionTest();
+            try (ObjectInputStream in = new ObjectInputStream(
+                    new FileInputStream("dcst_data.ser"))) {
+                DCST restored = (DCST) in.readObject();
+                System.out.println("Restored department: " + restored.getName());
+            }
+
+            // custom exception
+            System.out.println("\n11. EXCEPTION HANDLING");
+            try {
+                int students = -5;
+                if (students < 0) {
+                    throw new InvalidDataException(
+                            "Student count cannot be negative");
+                }
+            } catch (InvalidDataException e) {
+                System.out.println("Error: " + e.getMessage());
+            }
 
         } catch (Exception e) {
-            System.out.println("General Exception caught: " + e.getMessage());
+            System.out.println("Error: " + e.getMessage());
         } finally {
-            System.out.println("\nExecution Completed. Resources cleaned up in finally block.");
-        }
-    }
-    
-    // Custom Exception Test using 'throws' and 'throw'
-    public static void throwCustomExceptionTest() throws InvalidDataException {
-        try {
-            int students = -5;
-            if (students < 0) {
-                throw new InvalidDataException("Student count cannot be negative.");
-            }
-        } catch (InvalidDataException e) {
-            System.out.println("Caught Custom Exception: " + e.getMessage());
+            System.out.println("\nProgram finished.");
         }
     }
 }
